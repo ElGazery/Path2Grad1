@@ -20,7 +20,7 @@ public partial class Internship
     public string? InternshipLink { get; set; }
 
     [Column("StudentID")]
-    public int StudentId { get; set; }
+    public int? StudentId { get; set; }
 
     [InverseProperty("Internship")]
     public virtual ICollection<InternshipCertificate> InternshipCertificates { get; set; } = new List<InternshipCertificate>();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Path2Grad.Models;
@@ -58,4 +59,8 @@ public partial class Student
     [ForeignKey("StudentId")]
     [InverseProperty("Students")]
     public virtual ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
+    public virtual ICollection<InternshipWorkFile> WorkFiles { get; set; }
+    public virtual ICollection<InternshipCertificate> Certificates { get; set; }
+
+
 }

@@ -5,12 +5,12 @@ using Path2Grad.Models;
 using Path2Grad.Dtos;
 using System.Threading.Tasks;
 using System.Security.Claims;
-
+using Path2Grad.Helper;
 namespace Path2Grad.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Student")]  // هذا يحدد أن أي مستخدم يجب أن يكون لديه دور "Student"
+    [Authorize(Roles = "Student")]  
     public class StudentController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -19,24 +19,95 @@ namespace Path2Grad.Controllers
         {
             _context = context;
         }
-       
-        [HttpGet]
-        public async Task<ActionResult<Student>> GetStudent()
+        private Student GetCurrentStudent()
         {
-            var email = User.FindFirst(ClaimTypes.Email).Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
 
-            if (string.IsNullOrEmpty(email))
-            {
-                return Unauthorized("User is not authenticated");
-            }
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentEmail == email);
+            if (email == null)
+                return null;
 
-            if (student == null)
-            {
-                return NotFound("Student not found");
-            }
-
-            return Ok(student);
+            return _context.Students.FirstOrDefault(d => d.StudentEmail == email);
         }
+
+        [HttpGet("Profile")]
+        public IActionResult GetProfile()
+        {
+            var student = GetCurrentStudent();
+            return Ok(student);
+
+        }
+
+
+        [HttpGet("CVTemplets")]
+        public IActionResult GetAllCVTemplets()
+        {
+         var CVs=_context.Cvs.Where(e=>e.Type=="Templet").ToList();
+            return Ok(CVs);
+        
+        }
+        [HttpPost("AddStudentCV")]
+        public IActionResult PostCv(IFormFile cv)
+        {
+              var student = GetCurrentStudent();
+            var pdf = IFormToByteHelper.ConvertToBytes(cv);
+            Cv StudetnCv = new Cv()
+            {
+                Cvfile = pdf,
+                StudentId = student.StudentId,
+                Type = "StudentCV",
+                CVName = cv.FileName
+
+            };
+            _context.Cvs.Add(StudetnCv);
+            _context.SaveChanges();
+            return Ok(StudetnCv);
+
+        }
+
+
+        [HttpGet("Internship")]
+        public IActionResult GetAllInternship()
+        {
+            var intern = _context.Internships.Select(e => new
+            {
+                Name=e.InternshipName,
+                Link=e.InternshipLink
+            }).ToList();
+            return Ok(intern);
+        }
+
+        [HttpPost("WorkFiles")]
+        public IActionResult PostWorkFile(IFormFile file)
+        {
+            var student = GetCurrentStudent();
+            var PDF = IFormToByteHelper.ConvertToBytes(file);
+            InternshipWorkFile file1 = new InternshipWorkFile()
+            {
+                WorkFile =PDF,
+                StudentId=student.StudentId
+                
+             };
+            _context.InternshipWorkFiles.Add(file1);
+            _context.SaveChanges();
+
+            return Ok(file1);
+        }
+        [HttpPost("Certificates")]
+        public IActionResult PostCertificate(IFormFile file)
+        {
+            var student = GetCurrentStudent();
+            var PDF = IFormToByteHelper.ConvertToBytes(file);
+            InternshipCertificate file1 = new InternshipCertificate()
+            {
+                Certificate = PDF,
+                StudentId=student.StudentId
+            };
+            _context.InternshipCertificates.Add(file1);
+            _context.SaveChanges();
+
+            return Ok(file1);
+        }
+
+
     }
 }

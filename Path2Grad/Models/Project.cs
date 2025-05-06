@@ -17,8 +17,6 @@ public partial class Project
 
     public string? Description { get; set; }
 
-    public string? Requirements { get; set; }
-
     public int NumberOfTeam { get; set; }
 
     [InverseProperty("Project")]
@@ -36,4 +34,9 @@ public partial class Project
 
     [InverseProperty("Project")]
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = new List<TeamMember>();
+    [InverseProperty("Project")]
+    public ICollection<ProjectRequirement> Requirements { get; set; }
+    [InverseProperty("Project")]
+    public ICollection<ProjectFile> projectFiles { get; set; }
+
 }

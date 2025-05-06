@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Path2Grad.Models;
 
@@ -11,9 +12,11 @@ using Path2Grad.Models;
 namespace Path2Grad.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250504174518_updatecv")]
+    partial class updatecv
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,10 +61,6 @@ namespace Path2Grad.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Cvid"));
 
-                    b.Property<string>("CVName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<byte[]>("Cvfile")
                         .HasColumnType("varbinary(max)")
                         .HasColumnName("CVFile");
@@ -105,7 +104,7 @@ namespace Path2Grad.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int?>("StudentId")
+                    b.Property<int>("StudentId")
                         .HasColumnType("int")
                         .HasColumnName("StudentID");
 
@@ -130,17 +129,12 @@ namespace Path2Grad.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<int?>("InternshipId")
+                    b.Property<int>("InternshipId")
                         .HasColumnType("int")
                         .HasColumnName("InternshipID");
 
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
                     b.HasKey("InternshipCertificatesId")
                         .HasName("PK__Internsh__D378C5AEFB3D51DD");
-
-                    b.HasIndex("StudentId");
 
                     b.HasIndex(new[] { "InternshipId" }, "IX_InternshipCertificates_InternshipID");
 
@@ -156,12 +150,9 @@ namespace Path2Grad.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InternshipWorkFilesId"));
 
-                    b.Property<int?>("InternshipId")
+                    b.Property<int>("InternshipId")
                         .HasColumnType("int")
                         .HasColumnName("InternshipID");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
 
                     b.Property<byte[]>("WorkFile")
                         .IsRequired()
@@ -169,8 +160,6 @@ namespace Path2Grad.Migrations
 
                     b.HasKey("InternshipWorkFilesId")
                         .HasName("PK__Internsh__A50A41255C06CC0C");
-
-                    b.HasIndex("StudentId");
 
                     b.HasIndex(new[] { "InternshipId" }, "IX_InternshipWorkFiles_InternshipID");
 
@@ -702,6 +691,8 @@ namespace Path2Grad.Migrations
                     b.HasOne("Path2Grad.Models.Student", "Student")
                         .WithMany("Internships")
                         .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK__Internshi__Stude__4F7CD00D");
 
                     b.Navigation("Student");
@@ -712,17 +703,11 @@ namespace Path2Grad.Migrations
                     b.HasOne("Path2Grad.Models.Internship", "Internship")
                         .WithMany("InternshipCertificates")
                         .HasForeignKey("InternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK__Internshi__Inter__5535A963");
 
-                    b.HasOne("Path2Grad.Models.Student", "Student")
-                        .WithMany("Certificates")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Internship");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.InternshipWorkFile", b =>
@@ -730,17 +715,11 @@ namespace Path2Grad.Migrations
                     b.HasOne("Path2Grad.Models.Internship", "Internship")
                         .WithMany("InternshipWorkFiles")
                         .HasForeignKey("InternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK__Internshi__Inter__52593CB8");
 
-                    b.HasOne("Path2Grad.Models.Student", "Student")
-                        .WithMany("WorkFiles")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Internship");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.Message", b =>
@@ -946,8 +925,6 @@ namespace Path2Grad.Migrations
 
             modelBuilder.Entity("Path2Grad.Models.Student", b =>
                 {
-                    b.Navigation("Certificates");
-
                     b.Navigation("ChatBotConversations");
 
                     b.Navigation("Cv");
@@ -959,8 +936,6 @@ namespace Path2Grad.Migrations
                     b.Navigation("Track");
 
                     b.Navigation("TrackTest");
-
-                    b.Navigation("WorkFiles");
                 });
 #pragma warning restore 612, 618
         }

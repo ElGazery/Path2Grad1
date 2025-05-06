@@ -13,15 +13,17 @@ public partial class Cv
     [Key]
     [Column("CVID")]
     public int Cvid { get; set; }
+    public string CVName { get; set; }
 
     [StringLength(255)]
     public string? Link { get; set; }
 
     [Column("CVFile")]
     public byte[]? Cvfile { get; set; }
+    public string Type { get; set; }    
 
     [Column("StudentID")]
-    public int StudentId { get; set; }
+    public int? StudentId { get; set; }
 
     [ForeignKey("StudentId")]
     [InverseProperty("Cv")]

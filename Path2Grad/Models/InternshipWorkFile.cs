@@ -16,8 +16,11 @@ public partial class InternshipWorkFile
     public byte[] WorkFile { get; set; } = null!;
 
     [Column("InternshipID")]
-    public int InternshipId { get; set; }
+    public int? InternshipId { get; set; }
+    public int StudentId { get; set; }
 
+    [ForeignKey("StudentId")]
+    public virtual Student Student { get; set; }
     [ForeignKey("InternshipId")]
     [InverseProperty("InternshipWorkFiles")]
     public virtual Internship Internship { get; set; } = null!;
