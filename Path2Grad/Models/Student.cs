@@ -50,8 +50,12 @@ public partial class Student
     [InverseProperty("Student")]
     public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
 
-    [InverseProperty("Student")]
+    public int? TrackId { get; set; }
+
+    [ForeignKey("TrackId")]
+    [InverseProperty("Students")]
     public virtual Track? Track { get; set; }
+
 
     [InverseProperty("Student")]
     public virtual TrackTest? TrackTest { get; set; }

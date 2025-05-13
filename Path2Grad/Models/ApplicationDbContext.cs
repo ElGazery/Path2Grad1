@@ -46,10 +46,12 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<TeamMember> TeamMembers { get; set; }
 
     public virtual DbSet<Track> Tracks { get; set; }
-
+    public virtual DbSet<TrackItem> TrackItem { get; set; }
+    public virtual DbSet<ItemLesson> ItemLesson { get; set; }
     public virtual DbSet<TrackTest> TrackTests { get; set; }
     public virtual DbSet<ProjectRequirement> ProjectRequirements {  get; set; }
     public virtual DbSet<ProjectFile> ProjectFiles { get; set; }
+    public virtual DbSet<Field> Fields { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=.;Database=Path2Grad1;Trusted_Connection=True;TrustServerCertificate=True;");
@@ -102,7 +104,15 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.ProjectFieldId).HasName("PK__ProjectF__489DEBAE6509B789");
 
-            entity.HasOne(d => d.Project).WithMany(p => p.ProjectFields).HasConstraintName("FK__ProjectFi__Proje__74AE54BC");
+            modelBuilder.Entity<ProjectField>()
+                .HasOne(pf => pf.Project)
+                .WithMany(p => p.ProjectFields)
+                .HasForeignKey(pf => pf.ProjectId);
+
+            modelBuilder.Entity<ProjectField>()
+                .HasOne(pf => pf.Field)
+                .WithMany(f => f.ProjectFields)
+                .HasForeignKey(pf => pf.FieldId);
         });
 
         modelBuilder.Entity<ProjectsAdmin>(entity =>
@@ -115,7 +125,6 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.ProjectBankId).HasName("PK__Projects__2952D07D1CE7D6B7");
 
-            entity.HasOne(d => d.Admin).WithOne(p => p.ProjectsBank).HasConstraintName("FK__ProjectsB__Admin__7B5B524B");
         });
 
         modelBuilder.Entity<ProjectsBankProjectField>(entity =>
@@ -136,6 +145,10 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.Project).WithMany(p => p.Students)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK__Students__Projec__48CFD27E");
+           entity.HasOne(s => s.Track)
+        .WithMany(t => t.Students)
+        .HasForeignKey(s => s.TrackId)
+        .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Supervisor>(entity =>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Path2Grad.Models;
 
@@ -11,9 +12,11 @@ using Path2Grad.Models;
 namespace Path2Grad.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250511201246_updateadmin")]
+    partial class updateadmin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,23 +88,6 @@ namespace Path2Grad.Migrations
                         .HasFilter("[StudentID] IS NOT NULL");
 
                     b.ToTable("CV");
-                });
-
-            modelBuilder.Entity("Path2Grad.Models.Field", b =>
-                {
-                    b.Property<int>("FieldId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FieldId"));
-
-                    b.Property<string>("FieldName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("FieldId");
-
-                    b.ToTable("Fields");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.Internship", b =>
@@ -289,16 +275,18 @@ namespace Path2Grad.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectFieldId"));
 
-                    b.Property<int>("FieldId")
-                        .HasColumnType("int");
+                    b.Property<string>("ProjectField1")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("ProjectField");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("ProjectID");
 
                     b.HasKey("ProjectFieldId")
                         .HasName("PK__ProjectF__489DEBAE6509B789");
-
-                    b.HasIndex("FieldId");
 
                     b.HasIndex(new[] { "ProjectId" }, "IX_ProjectField_ProjectID");
 
@@ -812,19 +800,12 @@ namespace Path2Grad.Migrations
 
             modelBuilder.Entity("Path2Grad.Models.ProjectField", b =>
                 {
-                    b.HasOne("Path2Grad.Models.Field", "Field")
-                        .WithMany("ProjectFields")
-                        .HasForeignKey("FieldId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Path2Grad.Models.Project", "Project")
                         .WithMany("ProjectFields")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Field");
+                        .IsRequired()
+                        .HasConstraintName("FK__ProjectFi__Proje__74AE54BC");
 
                     b.Navigation("Project");
                 });
@@ -965,11 +946,6 @@ namespace Path2Grad.Migrations
             modelBuilder.Entity("Path2Grad.Models.ChatBotConversation", b =>
                 {
                     b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("Path2Grad.Models.Field", b =>
-                {
-                    b.Navigation("ProjectFields");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.Internship", b =>

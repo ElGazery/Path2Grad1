@@ -26,6 +26,5 @@ public partial class ProjectsAdmin
     public byte[]? Pic { get; set; }
 
 
-    [InverseProperty("Admin")]
-    public virtual ProjectsBank? ProjectsBank { get; set; }
+    
 }
