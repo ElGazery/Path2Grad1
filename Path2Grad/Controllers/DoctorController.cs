@@ -96,6 +96,18 @@ namespace Path2Grad.Controllers
             return Ok(projectRequirement);
 
         }
+        [HttpGet("ProjectFiles")]
+        public IActionResult GetProjectFiles()
+        {
+            var email = User.FindFirst(ClaimTypes.Email).Value;
+            var Doctor = _context.Supervisors.FirstOrDefault(e => e.SupervisorEmail == email);
+            var projectfiles = _context.ProjectFiles.Where(p => p.ProjectId == Doctor.ProjectId).Select(t => new
+            {
+                t.FileName,
+                t.FileContent
+            }).ToList();
+            return Ok(projectfiles);
+        }
         // the last ting in the docotr controller is the get endpoint to get the project files from the student 
 
 

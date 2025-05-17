@@ -8,7 +8,7 @@ namespace Path2Grad.Models;
 
 [Index("ProjectId", Name = "IX_Tasks_ProjectID")]
 [Index("StudentId", Name = "IX_Tasks_StudentID")]
-public partial class Task
+public partial class ProjectTask
 {
     [Key]
     [Column("TaskID")]

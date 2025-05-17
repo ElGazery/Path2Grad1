@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Path2Grad.Models;
 
@@ -11,9 +12,11 @@ using Path2Grad.Models;
 namespace Path2Grad.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250516210727_updateRequset")]
+    partial class updateRequset
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -525,18 +528,11 @@ namespace Path2Grad.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("StudentId1")
-                        .HasColumnType("int");
-
                     b.HasKey("RequestId");
 
                     b.HasIndex("ProjectId");
 
-                    b.HasIndex("SenderId");
-
                     b.HasIndex("StudentId");
-
-                    b.HasIndex("StudentId1");
 
                     b.ToTable("StudentProjectJoinRequests");
                 });
@@ -925,25 +921,13 @@ namespace Path2Grad.Migrations
                         .WithMany("JoinRequests")
                         .HasForeignKey("ProjectId");
 
-                    b.HasOne("Path2Grad.Models.Student", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Path2Grad.Models.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Path2Grad.Models.Student", null)
                         .WithMany("ProjectJoinRequests")
-                        .HasForeignKey("StudentId1");
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Project");
-
-                    b.Navigation("Sender");
 
                     b.Navigation("Student");
                 });

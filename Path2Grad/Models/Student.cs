@@ -48,7 +48,7 @@ public partial class Student
     public virtual Project? Project { get; set; }
 
     [InverseProperty("Student")]
-    public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public virtual ICollection<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();
 
     public int? TrackId { get; set; }
 
@@ -65,6 +65,9 @@ public partial class Student
     public virtual ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
     public virtual ICollection<InternshipWorkFile> WorkFiles { get; set; }
     public virtual ICollection<InternshipCertificate> Certificates { get; set; }
+    [InverseProperty("Student")]
+    public virtual ICollection<StudentProjectJoinRequest> ProjectJoinRequests { get; set; } = new List<StudentProjectJoinRequest>();
+
 
 
 }

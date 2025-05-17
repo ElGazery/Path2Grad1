@@ -14,7 +14,7 @@ public partial class ApplicationDbContext : DbContext
         : base(options)
     {
     }
-
+    public DbSet<StudentProjectJoinRequest> StudentProjectJoinRequests { get; set; }
     public virtual DbSet<ChatBotConversation> ChatBotConversations { get; set; }
 
     public virtual DbSet<Cv> Cvs { get; set; }
@@ -41,7 +41,7 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Supervisor> Supervisors { get; set; }
 
-    public virtual DbSet<Task> Tasks { get; set; }
+    public virtual DbSet<ProjectTask> Tasks { get; set; }
 
     public virtual DbSet<TeamMember> TeamMembers { get; set; }
 
@@ -178,7 +178,7 @@ public partial class ApplicationDbContext : DbContext
                     });
         });
 
-        modelBuilder.Entity<Task>(entity =>
+        modelBuilder.Entity<ProjectTask>(entity =>
         {
             entity.HasKey(e => e.TaskId).HasName("PK__Tasks__7C6949D133BB04F3");
 
@@ -193,6 +193,17 @@ public partial class ApplicationDbContext : DbContext
 
             entity.HasOne(d => d.Project).WithMany(p => p.TeamMembers).HasConstraintName("FK__TeamMembe__Proje__71D1E811");
         });
+        modelBuilder.Entity<StudentProjectJoinRequest>()
+         .HasOne(r => r.Sender)
+             .WithMany()
+             .HasForeignKey(r => r.SenderId)
+             .OnDelete(DeleteBehavior.Restrict); // or .NoAction
+
+        modelBuilder.Entity<StudentProjectJoinRequest>()
+            .HasOne(r => r.Student)
+            .WithMany()
+            .HasForeignKey(r => r.StudentId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         OnModelCreatingPartial(modelBuilder);
     }

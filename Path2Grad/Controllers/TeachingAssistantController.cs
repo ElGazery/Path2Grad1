@@ -26,8 +26,8 @@ namespace Path2Grad.Controllers
         public IActionResult GetProfile()
         {
             var email = User.FindFirst(ClaimTypes.Email).Value;
-            var doctor = _context.Supervisors.FirstOrDefault(d => d.SupervisorEmail == email);
-            return Ok(doctor);
+            var TeachingAssistant = _context.Supervisors.FirstOrDefault(d => d.SupervisorEmail == email);
+            return Ok(TeachingAssistant);
 
         }
         // the point is to delete the tracking from the teaching asstiant 
@@ -35,10 +35,10 @@ namespace Path2Grad.Controllers
         public IActionResult GetProjects()
         {
             var email = User.FindFirst(ClaimTypes.Email).Value;
-            var doctor = _context.Supervisors.FirstOrDefault(e => e.SupervisorEmail == email);
+            var TeachingAssistant = _context.Supervisors.FirstOrDefault(e => e.SupervisorEmail == email);
             var Projects = _context.Projects.Include(e => e.Students).
                                              ThenInclude(e => e.Supervisors).
-                                             Where(e => e.ProjectId == doctor.ProjectId).
+                                             Where(e => e.ProjectId == TeachingAssistant.ProjectId).
                                              Select(p => new
                                              {
                                                  p.ProjectId,
@@ -97,6 +97,17 @@ namespace Path2Grad.Controllers
             return Ok(projectRequirement);
 
         }
-        // the smae thing is handle the case of the files downloads from the staudent ...
+        [HttpGet("ProjectFiles")]
+        public IActionResult GetProjectFiles()
+        {
+            var email = User.FindFirst(ClaimTypes.Email).Value;
+            var TeachingAssistant = _context.Supervisors.FirstOrDefault(e => e.SupervisorEmail == email);
+            var projectfiles = _context.ProjectFiles.Where(p => p.ProjectId == TeachingAssistant.ProjectId).Select(t => new
+            {
+                t.FileName,
+                t.FileContent
+            }).ToList();
+            return Ok(projectfiles);
+        }
     }
 }

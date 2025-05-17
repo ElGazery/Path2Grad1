@@ -31,7 +31,7 @@ public partial class Project
     public virtual ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
     [JsonIgnore]
     [InverseProperty("Project")]
-    public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
+    public virtual ICollection<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();
     [JsonIgnore]
     [InverseProperty("Project")]
     public virtual ICollection<TeamMember> TeamMembers { get; set; } = new List<TeamMember>();
@@ -41,5 +41,8 @@ public partial class Project
     [JsonIgnore]
     [InverseProperty("Project")]
     public ICollection<ProjectFile> projectFiles { get; set; }
+    [InverseProperty("Project")]
+    public virtual ICollection<StudentProjectJoinRequest> JoinRequests { get; set; } = new List<StudentProjectJoinRequest>();
+
 
 }

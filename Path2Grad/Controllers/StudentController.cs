@@ -293,8 +293,143 @@ namespace Path2Grad.Controllers
             student.ProjectId = project.ProjectId;
             _context.ProjectFields.AddRange(projectFields);
             _context.SaveChanges();
-             return Ok(project);
+             return Ok("Project Created successfully .. Start to add supervisors and students ");
 
+        }
+        [HttpPost("StudentRequest")]
+        public IActionResult SendProjectRquest(RequestDto requestDto)
+        {
+            var student = GetCurrentStudent();
+           StudentProjectJoinRequest studentProjectJoinRequest = new StudentProjectJoinRequest()
+            {
+                SenderId=student.StudentId,
+                StudentId=requestDto.ReceiverId,
+                ProjectId=student.ProjectId
+            };
+            _context.Add(studentProjectJoinRequest);
+            _context.SaveChanges();
+            return Ok("Request Send.. ");
+
+        }
+
+        [HttpGet("StudentRequest")]
+        public IActionResult GetProjectRquest()
+        {
+            var student = GetCurrentStudent();
+            if(student.ProjectId!=null)
+            {
+                return Ok("You are join in project .. ");
+            }
+            var AllRequests = _context.StudentProjectJoinRequests.Where(e => e.StudentId == student.StudentId)
+                .Select(e => new
+                {
+                    Requestid=e.RequestId,
+                    SenderPic = e.Sender.Pic,
+                    SenderName =e.Sender.StudentName,
+                    ProjectName =e.Project.ProjectName
+                })
+                .ToList();
+
+            return Ok(AllRequests);
+
+        }
+        [HttpPost("StatusRequest")]
+        public IActionResult StatusRequest(StatusRequestDto statusRequestDto)
+        {
+            var student = GetCurrentStudent();
+            var request = _context.StudentProjectJoinRequests.FirstOrDefault(e => e.RequestId == statusRequestDto.RequestId);
+            if (request == null)
+                return NotFound("Request not found.");
+            if (statusRequestDto.Status=="Remove")
+            {
+               
+                _context.StudentProjectJoinRequests.Remove(request);
+
+            }else if(statusRequestDto.Status=="Accept")
+            {
+                student.ProjectId = request.ProjectId;
+
+            }else
+            {
+                return NotFound("Status not correct");
+            }
+            _context.SaveChanges();
+            return Ok(student);
+        }
+
+
+        [HttpGet("Project")]
+        public IActionResult GetProject()
+        {
+            var student = GetCurrentStudent();
+
+            var project = _context.Projects
+                .Include(p => p.Requirements)
+                .Include(p => p.Tasks)
+                .Include(p => p.projectFiles) 
+                .Where(p => p.ProjectId == student.ProjectId)
+                .Select(p => new
+                {
+                    ProjectRequirements = p.Requirements.Select(x => new
+                    {
+                        RequirementName = x.RequirementName,
+                        Pdf = x.PdfContent
+                    }).ToList(),
+
+                    ProjectFiles = p.projectFiles.Select(f => new
+                    {
+                        FileName = f.FileName,          
+                        FileContent = f.FileContent     
+                    }).ToList(),
+
+                    ProjectTasks = p.Tasks.Select(t => new
+                    {
+                        TaskName = t.TaskName,
+                        AssignedToName = t.Student.StudentName,
+                        AssignedToPic = t.Student.Pic,
+                        Deadline = t.Deadline,
+                        Status = t.Status
+                    }).ToList()
+                })
+                .FirstOrDefault();
+
+            if (project == null)
+                return NotFound("Project not found.");
+
+            return Ok(project);
+        }
+        [HttpPost("AddTask")]
+        public IActionResult AddTask(AddTaskDto addTaskDto)
+        {
+            var student = GetCurrentStudent();
+            ProjectTask projecttask = new ProjectTask()
+            {
+                TaskName=addTaskDto.TaskName,
+                StudentId=addTaskDto.StudentId,
+                ProjectId=addTaskDto.ProjectId,
+                Deadline=addTaskDto.Deadline
+
+             };
+            _context.Add(projecttask);
+            _context.SaveChanges();
+            return Ok(projecttask);
+        }
+
+        [HttpPost("UploadFile")]
+        public IActionResult PostProjectfiles(ProjectFileDto file)
+        {
+            var student = GetCurrentStudent();
+            var PDF = IFormToByteHelper.ConvertToBytes(file.File);
+            ProjectFile projectFile = new ProjectFile()
+            {
+                FileContent=PDF,
+                ProjectId=file.ProjectId
+
+            };
+            _context.Add(projectFile);
+            _context.SaveChanges();
+
+            return Ok(file.File);
         }
     }
 }
