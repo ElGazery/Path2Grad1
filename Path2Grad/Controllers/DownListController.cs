@@ -1,7 +1,9 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Path2Grad.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Path2Grad.Controllers
 {
@@ -17,50 +19,61 @@ namespace Path2Grad.Controllers
         }
 
         [HttpGet("ProjectField")]
-         public IActionResult GetProjectField()
+        public async Task<IActionResult> GetProjectField()
         {
-            var Fields = _context.Fields.Distinct().ToList();
-            return Ok(Fields);
+            var fields = await _context.Fields.Distinct().ToListAsync();
+            return Ok(fields);
         }
 
         [HttpGet("Supervisor")]
-        public IActionResult GetSupervisor()
+        public async Task<IActionResult> GetSupervisor()
         {
-            var supervisors = _context.Supervisors.Where(e=>e.Position=="Doctor").Select(s => new
-            {
-                s.SupervisorId,
-                s.SupervisorName,
-                s.Pic,
-                s.Specialization
-            }).ToList();
+            var supervisors = await _context.Supervisors
+                .Where(e => e.Position == "Doctor")
+                .Select(s => new
+                {
+                    s.SupervisorId,
+                    s.SupervisorName,
+                    s.Pic,
+                    s.Specialization
+                })
+                .ToListAsync();
+
             return Ok(supervisors);
         }
+
         [HttpGet("CoSupervisor")]
-        public IActionResult GetCo_Supervisor()
+        public async Task<IActionResult> GetCoSupervisor()
         {
-            var supervisors = _context.Supervisors.Where(e => e.Position == "TeachingAssistant").Select(s => new
-            {
-                s.SupervisorId,
-                s.SupervisorName,
-                s.Pic,
-                s.Specialization
-            }).ToList();
+            var supervisors = await _context.Supervisors
+                .Where(e => e.Position == "TeachingAssistant")
+                .Select(s => new
+                {
+                    s.SupervisorId,
+                    s.SupervisorName,
+                    s.Pic,
+                    s.Specialization
+                })
+                .ToListAsync();
+
             return Ok(supervisors);
         }
+
         [HttpGet("Student/{trackName}")]
-        public IActionResult GetStudentByTrack(string trackName)
+        public async Task<IActionResult> GetStudentByTrack(string trackName)
         {
-            var Students = _context.Students.Where(s => s.Track.TrackName == trackName).Select(e => new
-            {
-                e.StudentId,
-                e.StudentName,
-                track=e.Track.TrackName,
-                e.Pic
-            }).ToList();
-            return Ok(Students);
+            var students = await _context.Students
+                .Where(s => s.Track.TrackName == trackName)
+                .Select(e => new
+                {
+                    e.StudentId,
+                    e.StudentName,
+                    track = e.Track.TrackName,
+                    e.Pic
+                })
+                .ToListAsync();
 
+            return Ok(students);
         }
-
-
     }
 }

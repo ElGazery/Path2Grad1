@@ -21,14 +21,12 @@ public partial class Project
     public int NumberOfTeam { get; set; }
     [JsonIgnore]
     public virtual ICollection<ProjectField> ProjectFields { get; set; } = new List<ProjectField>();
-
-
     [JsonIgnore]
     [InverseProperty("Project")]
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
     [JsonIgnore]
     [InverseProperty("Project")]
-    public virtual ICollection<Supervisor> Supervisors { get; set; } = new List<Supervisor>();
+    public virtual ICollection<SupervisorProject> SupervisorProjects { get; set; } = new List<SupervisorProject>();
     [JsonIgnore]
     [InverseProperty("Project")]
     public virtual ICollection<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();

@@ -1,9 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Path2Grad.Dtos;
 using Path2Grad.Models;
 
@@ -24,48 +22,57 @@ namespace Path2Grad.Controllers
         [HttpGet("Data")]
         public async Task<IActionResult> Get()
         {
-            var email = User.FindFirst(ClaimTypes.Email).Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
-            {
                 return Unauthorized("User is not authenticated");
-            }
-            var doctor = await _context.ProjectsAdmins.FirstOrDefaultAsync(d => d.AdminEmail == email);
 
-            return Ok(doctor);
+            var admin = await _context.ProjectsAdmins
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.AdminEmail == email);
 
+            return Ok(admin);
         }
-        [HttpGet("Projcets")]
-        public IActionResult GetProjects()
+
+        [HttpGet("Projects")]
+        public async Task<IActionResult> GetProjects()
         {
-            var projects = _context.Projects
-             .Include(p => p.Students)
-             .ThenInclude(s => s.Supervisors)
-             .Select(p => new
-             {
-                 ProjectId = p.ProjectId,
-                 ProjectName = p.ProjectName,
-                 Description = p.Description,
-                 student = p.Students.Select(s => new StudentDto
-                 {
-                    StudentId=s.StudentId,
-                    StudentName=s.StudentName,
-                    Pic=s.Pic
-                 }).ToList(),
-                 supervisor = p.Supervisors.Select(s=>new SupervisorDto 
-                 {
-                     SupervisorId=s.SupervisorId,
-                     SupervisorName=s.SupervisorName,
-                     Pic=s.Pic
-                 }).ToList()         
-                                     
-                 }).ToList() ;
-           
-        return Ok(projects);
+            var projects = await _context.Projects
+                .AsNoTracking()
+                .Include(p => p.Students)
+                    .ThenInclude(s => s.Supervisors)
+                .Select(p => new
+                {
+                    ProjectId = p.ProjectId,
+                    ProjectName = p.ProjectName,
+                    Description = p.Description,
+                    Students = p.Students.Select(s => new StudentDto
+                    {
+                        StudentId = s.StudentId,
+                        StudentName = s.StudentName,
+                        Pic = s.Pic
+                    }).ToList(),
+                    Supervisors = _context.SupervisorProjects
+                        .Where(sp => sp.ProjectId == p.ProjectId)
+                        .Select(sp => new SupervisorDto
+                        {
+                            SupervisorId = sp.Supervisor.SupervisorId,
+                            SupervisorName = sp.Supervisor.SupervisorName,
+                            Pic = sp.Supervisor.Pic
+                        }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(projects);
         }
-        [HttpGet("ProjcetById/{id}")]
-        public IActionResult GetProject(int id)
+
+        [HttpGet("ProjectById/{id}")]
+        public async Task<IActionResult> GetProject(int id)
         {
-            var project = _context.Projects.Include(e => e.Students).ThenInclude(s => s.Supervisors).Where(p=>p.ProjectId==id)
+            var project = await _context.Projects
+                .AsNoTracking()
+                .Include(p => p.Students)
+                    .ThenInclude(s => s.Supervisors)
+                .Where(p => p.ProjectId == id)
                 .Select(p => new
                 {
                     p.ProjectId,
@@ -73,32 +80,39 @@ namespace Path2Grad.Controllers
                     p.Description,
                     p.ProjectFields,
                     p.NumberOfTeam,
-                    student = p.Students.Select(s => new StudentDto
+                    Students = p.Students.Select(s => new StudentDto
                     {
                         StudentId = s.StudentId,
                         StudentName = s.StudentName,
                         Pic = s.Pic
                     }).ToList(),
-                    supervisor = p.Supervisors.Select(s => new SupervisorDto
-                    {
-                        SupervisorId = s.SupervisorId,
-                        SupervisorName = s.SupervisorName,
-                        Pic = s.Pic
-                    }).ToList()
+                    Supervisors = _context.SupervisorProjects
+                        .Where(sp => sp.ProjectId == p.ProjectId)
+                        .Select(sp => new SupervisorDto
+                        {
+                            SupervisorId = sp.Supervisor.SupervisorId,
+                            SupervisorName = sp.Supervisor.SupervisorName,
+                            Pic = sp.Supervisor.Pic
+                        }).ToList()
+                })
+                .FirstOrDefaultAsync();
 
-                });
+            if (project == null)
+                return NotFound("Project not found");
+
             return Ok(project);
         }
 
         [HttpGet("Profile")]
-        public IActionResult GetProfile()
+        public async Task<IActionResult> GetProfile()
         {
-            var email = User.FindFirst(ClaimTypes.Email).Value;
-            var admin = _context.ProjectsAdmins.FirstOrDefault(a => a.AdminEmail == email);
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            var admin = await _context.ProjectsAdmins
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.AdminEmail == email);
+
             return Ok(admin);
         }
-
-
-
     }
 }

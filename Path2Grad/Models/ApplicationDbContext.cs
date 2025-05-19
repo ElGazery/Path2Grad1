@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Path2Grad.Migrations;
 
 namespace Path2Grad.Models;
 
@@ -14,7 +15,9 @@ public partial class ApplicationDbContext : DbContext
         : base(options)
     {
     }
-    public DbSet<StudentProjectJoinRequest> StudentProjectJoinRequests { get; set; }
+    public virtual DbSet<SupervisorProject> SupervisorProjects { get; set; }
+    public virtual DbSet<SupervisorProjectJoinRequest> SupervisorProjectJoinRequests    { get; set; }
+    public virtual DbSet<StudentProjectJoinRequest> StudentProjectJoinRequests { get; set; }
     public virtual DbSet<ChatBotConversation> ChatBotConversations { get; set; }
 
     public virtual DbSet<Cv> Cvs { get; set; }

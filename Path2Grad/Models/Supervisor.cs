@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Path2Grad.Models;
 
-[Index("ProjectId", Name = "IX_Supervisors_ProjectId")]
 [Index("SupervisorEmail", Name = "UQ__Supervis__FAB2DC03A7DD1066", IsUnique = true)]
 public partial class Supervisor
 {
@@ -34,13 +33,12 @@ public partial class Supervisor
 
     public byte[]? Pic { get; set; }
 
-    public int? ProjectId { get; set; }
-
-    [ForeignKey("ProjectId")]
-    [InverseProperty("Supervisors")]
-    public virtual Project? Project { get; set; }
+   
 
     [ForeignKey("SupervisorId")]
     [InverseProperty("Supervisors")]
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
+    public virtual ICollection<SupervisorProjectJoinRequest> ProjectJoinRequests { get; set; } = new List<SupervisorProjectJoinRequest>();
+    [InverseProperty("Supervisor")]
+    public virtual ICollection<SupervisorProject> SupervisorProjects { get; set; } = new List<SupervisorProject>();
 }

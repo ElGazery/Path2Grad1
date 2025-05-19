@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Path2Grad.Models;
 
@@ -11,9 +12,11 @@ using Path2Grad.Models;
 namespace Path2Grad.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250519131716_inti5")]
+    partial class inti5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -605,6 +608,9 @@ namespace Path2Grad.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Specialization")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -627,6 +633,8 @@ namespace Path2Grad.Migrations
 
                     b.HasKey("SupervisorId")
                         .HasName("PK__Supervis__6FAABDAF944797EE");
+
+                    b.HasIndex("ProjectId");
 
                     b.HasIndex(new[] { "Phone" }, "UQ__Supervis__5C7E359E33217C14")
                         .IsUnique()
@@ -1020,6 +1028,13 @@ namespace Path2Grad.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("Path2Grad.Models.Supervisor", b =>
+                {
+                    b.HasOne("Path2Grad.Models.Project", null)
+                        .WithMany("Supervisors")
+                        .HasForeignKey("ProjectId");
+                });
+
             modelBuilder.Entity("Path2Grad.Models.SupervisorProject", b =>
                 {
                     b.HasOne("Path2Grad.Models.Project", "Project")
@@ -1135,6 +1150,8 @@ namespace Path2Grad.Migrations
                     b.Navigation("Students");
 
                     b.Navigation("SupervisorProjects");
+
+                    b.Navigation("Supervisors");
 
                     b.Navigation("Tasks");
 

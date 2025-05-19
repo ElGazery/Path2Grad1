@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Path2Grad.Models;
 
@@ -11,9 +12,11 @@ using Path2Grad.Models;
 namespace Path2Grad.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250519114210_supervisorproject")]
+    partial class supervisorproject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -642,8 +645,7 @@ namespace Path2Grad.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("ID");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
@@ -659,15 +661,14 @@ namespace Path2Grad.Migrations
 
                     b.HasIndex("SupervisorId");
 
-                    b.ToTable("SupervisorProjects");
+                    b.ToTable("SupervisorProject");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.SupervisorProjectJoinRequest", b =>
                 {
                     b.Property<int>("RequestId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("RequestId");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
 
@@ -994,7 +995,7 @@ namespace Path2Grad.Migrations
             modelBuilder.Entity("Path2Grad.Models.StudentProjectJoinRequest", b =>
                 {
                     b.HasOne("Path2Grad.Models.Project", "Project")
-                        .WithMany("JoinRequests")
+                        .WithMany("StudentJoinRequests")
                         .HasForeignKey("ProjectId");
 
                     b.HasOne("Path2Grad.Models.Student", "Sender")
@@ -1042,11 +1043,11 @@ namespace Path2Grad.Migrations
             modelBuilder.Entity("Path2Grad.Models.SupervisorProjectJoinRequest", b =>
                 {
                     b.HasOne("Path2Grad.Models.Project", "Project")
-                        .WithMany()
+                        .WithMany("SupervisorJoinRequests")
                         .HasForeignKey("ProjectId");
 
                     b.HasOne("Path2Grad.Models.Supervisor", "Supervisor")
-                        .WithMany("ProjectJoinRequests")
+                        .WithMany("supervisorProjectJoinRequest")
                         .HasForeignKey("SupervisorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1126,13 +1127,15 @@ namespace Path2Grad.Migrations
 
             modelBuilder.Entity("Path2Grad.Models.Project", b =>
                 {
-                    b.Navigation("JoinRequests");
-
                     b.Navigation("ProjectFields");
 
                     b.Navigation("Requirements");
 
+                    b.Navigation("StudentJoinRequests");
+
                     b.Navigation("Students");
+
+                    b.Navigation("SupervisorJoinRequests");
 
                     b.Navigation("SupervisorProjects");
 
@@ -1169,9 +1172,9 @@ namespace Path2Grad.Migrations
 
             modelBuilder.Entity("Path2Grad.Models.Supervisor", b =>
                 {
-                    b.Navigation("ProjectJoinRequests");
-
                     b.Navigation("SupervisorProjects");
+
+                    b.Navigation("supervisorProjectJoinRequest");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.Track", b =>

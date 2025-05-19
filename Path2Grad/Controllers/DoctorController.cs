@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Path2Grad.Dtos;
 using Path2Grad.Helper;
 using Path2Grad.Models;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Path2Grad.Controllers
 {
@@ -23,94 +23,125 @@ namespace Path2Grad.Controllers
         }
 
         [HttpGet("Profile")]
-        public IActionResult GetProfile()
+        public async Task<IActionResult> GetProfile()
         {
-            var email = User.FindFirst(ClaimTypes.Email).Value;
-            var doctor = _context.Supervisors.FirstOrDefault(d => d.SupervisorEmail == email);
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var doctor = await _context.Supervisors.FirstOrDefaultAsync(d => d.SupervisorEmail == email);
             return Ok(doctor);
-
-        }
-        [HttpGet("Projcets")]
-        public IActionResult GetProjects()
-        {
-            var email = User.FindFirst(ClaimTypes.Email).Value;
-            var doctor = _context.Supervisors.FirstOrDefault(e => e.SupervisorEmail == email);
-            var Projects = _context.Projects.Include(e => e.Students).
-                                             ThenInclude(e => e.Supervisors).
-                                             Where(e => e.ProjectId == doctor.ProjectId).
-                                             Select(p => new
-                                             {
-                                                 p.ProjectId,
-                                                 p.ProjectName,
-                                                 p.Description,
-                                                 students = p.Students.Select(s => new StudentDto
-                                                 {
-                                                     StudentId = s.StudentId,
-                                                     StudentName = s.StudentName,
-                                                     Pic = s.Pic
-                                                 }).ToList(),
-                                                 TeachingAssistant = p.Supervisors.Where(t => t.Position == "TeachingAssistant").Select(t => new
-                                                 {
-                                                     TeachingAssistanId = t.SupervisorId,
-                                                     TeacahingAssistanName = t.SupervisorName,
-                                                     TeachingAssistantPic = t.Pic
-                                                 }).ToList()
-                                             });
-            return Ok(Projects);
         }
 
-        [HttpGet("ProjcetById/{id}")]
-        public IActionResult GetProject(int id)
+        [HttpGet("Projects")]
+        public async Task<IActionResult> GetProjects()
         {
-            var project = _context.Projects.Include(e => e.Students).
-                                            ThenInclude(s => s.Supervisors).
-                                            Where(p => p.ProjectId == id)
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var doctor = await _context.Supervisors.FirstOrDefaultAsync(s => s.SupervisorEmail == email);
+
+            if (doctor == null)
+                return NotFound("Doctor not found");
+
+            var projectIds = await _context.SupervisorProjects
+                .Where(sp => sp.SupervisorId == doctor.SupervisorId)
+                .Select(sp => sp.ProjectId)
+                .ToListAsync();
+
+            var projects = await _context.Projects
+                .Where(p => projectIds.Contains(p.ProjectId))
+                .Include(p => p.Students)
+                    .ThenInclude(s => s.Supervisors)
+                .Select(p => new
+                {
+                    p.ProjectId,
+                    p.ProjectName,
+                    p.Description,
+                    Students = p.Students.Select(s => new StudentDto
+                    {
+                        StudentId = s.StudentId,
+                        StudentName = s.StudentName,
+                        Pic = s.Pic
+                    }).ToList(),
+                    TeachingAssistants = _context.SupervisorProjects
+                        .Where(sp => sp.ProjectId == p.ProjectId && sp.Supervisor.Position == "TeachingAssistant")
+                        .Select(sp => new
+                        {
+                            TeachingAssistanId = sp.Supervisor.SupervisorId,
+                            TeacahingAssistanName = sp.Supervisor.SupervisorName,
+                            TeachingAssistantPic = sp.Supervisor.Pic
+                        }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(projects);
+        }
+
+        [HttpGet("ProjectById/{id}")]
+        public async Task<IActionResult> GetProject(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Students)
+                    .ThenInclude(s => s.Supervisors)
+                .Where(p => p.ProjectId == id)
                 .Select(p => new
                 {
                     p.ProjectId,
                     p.ProjectName,
                     p.ProjectFields,
                     p.NumberOfTeam,
-                    student = p.Students.Select(s => new StudentDto
+                    Students = p.Students.Select(s => new StudentDto
                     {
                         StudentId = s.StudentId,
                         StudentName = s.StudentName,
                         Pic = s.Pic
                     }).ToList(),
-                    supervisor = p.Supervisors.Select(s => new SupervisorDto
-                    {
-                        SupervisorId = s.SupervisorId,
-                        SupervisorName = s.SupervisorName,
-                        Pic = s.Pic
-                    }).ToList()
+                    Supervisors = _context.SupervisorProjects
+                        .Where(sp => sp.ProjectId == p.ProjectId)
+                        .Select(sp => new SupervisorDto
+                        {
+                            SupervisorId = sp.Supervisor.SupervisorId,
+                            SupervisorName = sp.Supervisor.SupervisorName,
+                            Pic = sp.Supervisor.Pic
+                        }).ToList()
+                })
+                .FirstOrDefaultAsync();
 
-                });
+            if (project == null)
+                return NotFound("Project not found");
+
             return Ok(project);
         }
+
         [HttpPost("Requirement")]
-        public IActionResult PostRequirement([FromForm] ProjectRequirementCreateDto dto)
+        public async Task<IActionResult> PostRequirement([FromForm] ProjectRequirementCreateDto dto)
         {
-            ProjectRequirement projectRequirement = ProjectRequirementHelper.ToEntity(dto);
-            _context.ProjectRequirements.Add(projectRequirement);
-            _context.SaveChanges();
+            var projectRequirement = ProjectRequirementHelper.ToEntity(dto);
+            await _context.ProjectRequirements.AddAsync(projectRequirement);
+            await _context.SaveChangesAsync();
             return Ok(projectRequirement);
-
         }
+
         [HttpGet("ProjectFiles")]
-        public IActionResult GetProjectFiles()
+        public async Task<IActionResult> GetProjectFiles()
         {
-            var email = User.FindFirst(ClaimTypes.Email).Value;
-            var Doctor = _context.Supervisors.FirstOrDefault(e => e.SupervisorEmail == email);
-            var projectfiles = _context.ProjectFiles.Where(p => p.ProjectId == Doctor.ProjectId).Select(t => new
-            {
-                t.FileName,
-                t.FileContent
-            }).ToList();
-            return Ok(projectfiles);
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var doctor = await _context.Supervisors.FirstOrDefaultAsync(s => s.SupervisorEmail == email);
+
+            if (doctor == null)
+                return NotFound("Doctor not found");
+
+            var projectIds = await _context.SupervisorProjects
+                .Where(sp => sp.SupervisorId == doctor.SupervisorId)
+                .Select(sp => sp.ProjectId)
+                .ToListAsync();
+
+            var projectFiles = await _context.ProjectFiles
+                .Where(pf => projectIds.Contains(pf.ProjectId))
+                .Select(pf => new
+                {
+                    pf.FileName,
+                    pf.FileContent
+                })
+                .ToListAsync();
+
+            return Ok(projectFiles);
         }
-        // the last ting in the docotr controller is the get endpoint to get the project files from the student 
-
-
-
     }
 }
