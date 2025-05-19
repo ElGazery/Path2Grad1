@@ -6,11 +6,14 @@ using Path2Grad.Helper;
 using Path2Grad.Models;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Path2Grad.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class InternshipController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

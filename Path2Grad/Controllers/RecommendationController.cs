@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Mvc;
 using Path2Grad.Models;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Path2Grad.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class RecommendationController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
