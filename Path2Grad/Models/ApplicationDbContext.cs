@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Path2Grad.Migrations;
 
 namespace Path2Grad.Models;
 
