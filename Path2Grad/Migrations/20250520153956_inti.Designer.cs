@@ -12,8 +12,8 @@ using Path2Grad.Models;
 namespace Path2Grad.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250505205150_addcvname")]
-    partial class addcvname
+    [Migration("20250520153956_inti")]
+    partial class inti
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,6 +90,23 @@ namespace Path2Grad.Migrations
                     b.ToTable("CV");
                 });
 
+            modelBuilder.Entity("Path2Grad.Models.Field", b =>
+                {
+                    b.Property<int>("FieldId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FieldId"));
+
+                    b.Property<string>("FieldName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("FieldId");
+
+                    b.ToTable("Fields");
+                });
+
             modelBuilder.Entity("Path2Grad.Models.Internship", b =>
                 {
                     b.Property<int>("InternshipId")
@@ -108,7 +125,7 @@ namespace Path2Grad.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("StudentId")
+                    b.Property<int?>("StudentId")
                         .HasColumnType("int")
                         .HasColumnName("StudentID");
 
@@ -133,12 +150,17 @@ namespace Path2Grad.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<int>("InternshipId")
+                    b.Property<int?>("InternshipId")
                         .HasColumnType("int")
                         .HasColumnName("InternshipID");
 
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
                     b.HasKey("InternshipCertificatesId")
                         .HasName("PK__Internsh__D378C5AEFB3D51DD");
+
+                    b.HasIndex("StudentId");
 
                     b.HasIndex(new[] { "InternshipId" }, "IX_InternshipCertificates_InternshipID");
 
@@ -154,9 +176,12 @@ namespace Path2Grad.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InternshipWorkFilesId"));
 
-                    b.Property<int>("InternshipId")
+                    b.Property<int?>("InternshipId")
                         .HasColumnType("int")
                         .HasColumnName("InternshipID");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
 
                     b.Property<byte[]>("WorkFile")
                         .IsRequired()
@@ -165,9 +190,36 @@ namespace Path2Grad.Migrations
                     b.HasKey("InternshipWorkFilesId")
                         .HasName("PK__Internsh__A50A41255C06CC0C");
 
+                    b.HasIndex("StudentId");
+
                     b.HasIndex(new[] { "InternshipId" }, "IX_InternshipWorkFiles_InternshipID");
 
                     b.ToTable("InternshipWorkFiles");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.ItemLesson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("IsComplet")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TrackItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackItemId");
+
+                    b.ToTable("ItemLesson");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.Message", b =>
@@ -240,18 +292,16 @@ namespace Path2Grad.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectFieldId"));
 
-                    b.Property<string>("ProjectField1")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("ProjectField");
+                    b.Property<int>("FieldId")
+                        .HasColumnType("int");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("int")
-                        .HasColumnName("ProjectID");
+                        .HasColumnType("int");
 
                     b.HasKey("ProjectFieldId")
                         .HasName("PK__ProjectF__489DEBAE6509B789");
+
+                    b.HasIndex("FieldId");
 
                     b.HasIndex(new[] { "ProjectId" }, "IX_ProjectField_ProjectID");
 
@@ -310,6 +360,49 @@ namespace Path2Grad.Migrations
                     b.ToTable("ProjectRequirements");
                 });
 
+            modelBuilder.Entity("Path2Grad.Models.ProjectTask", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("TaskID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
+
+                    b.Property<DateTime>("Deadline")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int")
+                        .HasColumnName("ProjectID");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int")
+                        .HasColumnName("StudentID");
+
+                    b.Property<string>("TaskName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("TaskId")
+                        .HasName("PK__Tasks__7C6949D133BB04F3");
+
+                    b.HasIndex(new[] { "ProjectId" }, "IX_Tasks_ProjectID");
+
+                    b.HasIndex(new[] { "StudentId" }, "IX_Tasks_StudentID");
+
+                    b.ToTable("Tasks");
+                });
+
             modelBuilder.Entity("Path2Grad.Models.ProjectsAdmin", b =>
                 {
                     b.Property<int>("AdminId")
@@ -355,10 +448,6 @@ namespace Path2Grad.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectBankId"));
 
-                    b.Property<int>("AdminId")
-                        .HasColumnType("int")
-                        .HasColumnName("AdminID");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -367,16 +456,11 @@ namespace Path2Grad.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Requirements")
+                    b.Property<string>("ProjectSpecification")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ProjectBankId")
                         .HasName("PK__Projects__2952D07D1CE7D6B7");
-
-                    b.HasIndex(new[] { "AdminId" }, "IX_ProjectsBank_AdminID");
-
-                    b.HasIndex(new[] { "AdminId" }, "UQ_ProjectsBank_AdminID")
-                        .IsUnique();
 
                     b.ToTable("ProjectsBank");
                 });
@@ -445,8 +529,13 @@ namespace Path2Grad.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int?>("TrackId")
+                        .HasColumnType("int");
+
                     b.HasKey("StudentId")
                         .HasName("PK__Students__32C52A79DEEA706D");
+
+                    b.HasIndex("TrackId");
 
                     b.HasIndex(new[] { "ProjectId" }, "IX_Students_ProjectID");
 
@@ -458,6 +547,44 @@ namespace Path2Grad.Migrations
                         .HasFilter("([Phone] IS NOT NULL)");
 
                     b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.StudentProjectJoinRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StudentId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("SenderId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("StudentId1");
+
+                    b.ToTable("StudentProjectJoinRequests");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.Supervisor", b =>
@@ -480,9 +607,6 @@ namespace Path2Grad.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<int?>("ProjectId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Specialization")
                         .IsRequired()
@@ -507,8 +631,6 @@ namespace Path2Grad.Migrations
                     b.HasKey("SupervisorId")
                         .HasName("PK__Supervis__6FAABDAF944797EE");
 
-                    b.HasIndex(new[] { "ProjectId" }, "IX_Supervisors_ProjectId");
-
                     b.HasIndex(new[] { "Phone" }, "UQ__Supervis__5C7E359E33217C14")
                         .IsUnique()
                         .HasFilter("([Phone] IS NOT NULL)");
@@ -519,24 +641,41 @@ namespace Path2Grad.Migrations
                     b.ToTable("Supervisors");
                 });
 
-            modelBuilder.Entity("Path2Grad.Models.Task", b =>
+            modelBuilder.Entity("Path2Grad.Models.SupervisorProject", b =>
                 {
-                    b.Property<int>("TaskId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("TaskID");
+                        .HasColumnName("ID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
-
-                    b.Property<DateTime>("Deadline")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SupervisorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("SupervisorId");
+
+                    b.ToTable("SupervisorProjects");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.SupervisorProjectJoinRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("ProjectID");
+                        .HasColumnName("RequestId");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -544,22 +683,18 @@ namespace Path2Grad.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("StudentId")
-                        .HasColumnType("int")
-                        .HasColumnName("StudentID");
+                        .HasColumnType("int");
 
-                    b.Property<string>("TaskName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    b.Property<int>("SupervisorId")
+                        .HasColumnType("int");
 
-                    b.HasKey("TaskId")
-                        .HasName("PK__Tasks__7C6949D133BB04F3");
+                    b.HasKey("RequestId");
 
-                    b.HasIndex(new[] { "ProjectId" }, "IX_Tasks_ProjectID");
+                    b.HasIndex("ProjectId");
 
-                    b.HasIndex(new[] { "StudentId" }, "IX_Tasks_StudentID");
+                    b.HasIndex("SupervisorId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("SupervisorProjectJoinRequests");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.TeamMember", b =>
@@ -598,17 +733,6 @@ namespace Path2Grad.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TrackId"));
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Link")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int")
-                        .HasColumnName("StudentID");
-
                     b.Property<string>("TrackName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -616,10 +740,29 @@ namespace Path2Grad.Migrations
 
                     b.HasKey("TrackId");
 
-                    b.HasIndex(new[] { "StudentId" }, "IX_Tracks_StudentID")
-                        .IsUnique();
-
                     b.ToTable("Tracks");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.TrackItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TrackId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackId");
+
+                    b.ToTable("TrackItem");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.TrackTest", b =>
@@ -695,8 +838,6 @@ namespace Path2Grad.Migrations
                     b.HasOne("Path2Grad.Models.Student", "Student")
                         .WithMany("Internships")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK__Internshi__Stude__4F7CD00D");
 
                     b.Navigation("Student");
@@ -707,11 +848,17 @@ namespace Path2Grad.Migrations
                     b.HasOne("Path2Grad.Models.Internship", "Internship")
                         .WithMany("InternshipCertificates")
                         .HasForeignKey("InternshipId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK__Internshi__Inter__5535A963");
 
+                    b.HasOne("Path2Grad.Models.Student", "Student")
+                        .WithMany("Certificates")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Internship");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.InternshipWorkFile", b =>
@@ -719,11 +866,28 @@ namespace Path2Grad.Migrations
                     b.HasOne("Path2Grad.Models.Internship", "Internship")
                         .WithMany("InternshipWorkFiles")
                         .HasForeignKey("InternshipId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK__Internshi__Inter__52593CB8");
 
+                    b.HasOne("Path2Grad.Models.Student", "Student")
+                        .WithMany("WorkFiles")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Internship");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.ItemLesson", b =>
+                {
+                    b.HasOne("Path2Grad.Models.TrackItem", "TrackItem")
+                        .WithMany("ItemLessons")
+                        .HasForeignKey("TrackItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TrackItem");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.Message", b =>
@@ -740,12 +904,19 @@ namespace Path2Grad.Migrations
 
             modelBuilder.Entity("Path2Grad.Models.ProjectField", b =>
                 {
+                    b.HasOne("Path2Grad.Models.Field", "Field")
+                        .WithMany("ProjectFields")
+                        .HasForeignKey("FieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Path2Grad.Models.Project", "Project")
                         .WithMany("ProjectFields")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK__ProjectFi__Proje__74AE54BC");
+                        .IsRequired();
+
+                    b.Navigation("Field");
 
                     b.Navigation("Project");
                 });
@@ -772,16 +943,25 @@ namespace Path2Grad.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("Path2Grad.Models.ProjectsBank", b =>
+            modelBuilder.Entity("Path2Grad.Models.ProjectTask", b =>
                 {
-                    b.HasOne("Path2Grad.Models.ProjectsAdmin", "Admin")
-                        .WithOne("ProjectsBank")
-                        .HasForeignKey("Path2Grad.Models.ProjectsBank", "AdminId")
+                    b.HasOne("Path2Grad.Models.Project", "Project")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK__ProjectsB__Admin__7B5B524B");
+                        .HasConstraintName("FK__Tasks__ProjectID__6E01572D");
 
-                    b.Navigation("Admin");
+                    b.HasOne("Path2Grad.Models.Student", "Student")
+                        .WithMany("Tasks")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK__Tasks__StudentID__6EF57B66");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.ProjectsBankProjectField", b =>
@@ -804,37 +984,79 @@ namespace Path2Grad.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("FK__Students__Projec__48CFD27E");
 
+                    b.HasOne("Path2Grad.Models.Track", "Track")
+                        .WithMany("Students")
+                        .HasForeignKey("TrackId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Project");
+
+                    b.Navigation("Track");
                 });
 
-            modelBuilder.Entity("Path2Grad.Models.Supervisor", b =>
+            modelBuilder.Entity("Path2Grad.Models.StudentProjectJoinRequest", b =>
                 {
                     b.HasOne("Path2Grad.Models.Project", "Project")
-                        .WithMany("Supervisors")
+                        .WithMany("JoinRequests")
                         .HasForeignKey("ProjectId");
 
-                    b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("Path2Grad.Models.Task", b =>
-                {
-                    b.HasOne("Path2Grad.Models.Project", "Project")
-                        .WithMany("Tasks")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK__Tasks__ProjectID__6E01572D");
+                    b.HasOne("Path2Grad.Models.Student", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Path2Grad.Models.Student", "Student")
-                        .WithMany("Tasks")
+                        .WithMany()
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK__Tasks__StudentID__6EF57B66");
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Path2Grad.Models.Student", null)
+                        .WithMany("ProjectJoinRequests")
+                        .HasForeignKey("StudentId1");
 
                     b.Navigation("Project");
 
+                    b.Navigation("Sender");
+
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.SupervisorProject", b =>
+                {
+                    b.HasOne("Path2Grad.Models.Project", "Project")
+                        .WithMany("SupervisorProjects")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Path2Grad.Models.Supervisor", "Supervisor")
+                        .WithMany("SupervisorProjects")
+                        .HasForeignKey("SupervisorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Supervisor");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.SupervisorProjectJoinRequest", b =>
+                {
+                    b.HasOne("Path2Grad.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId");
+
+                    b.HasOne("Path2Grad.Models.Supervisor", "Supervisor")
+                        .WithMany("ProjectJoinRequests")
+                        .HasForeignKey("SupervisorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Supervisor");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.TeamMember", b =>
@@ -849,15 +1071,15 @@ namespace Path2Grad.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("Path2Grad.Models.Track", b =>
+            modelBuilder.Entity("Path2Grad.Models.TrackItem", b =>
                 {
-                    b.HasOne("Path2Grad.Models.Student", "Student")
-                        .WithOne("Track")
-                        .HasForeignKey("Path2Grad.Models.Track", "StudentId")
+                    b.HasOne("Path2Grad.Models.Track", "Track")
+                        .WithMany("Items")
+                        .HasForeignKey("TrackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Student");
+                    b.Navigation("Track");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.TrackTest", b =>
@@ -893,6 +1115,11 @@ namespace Path2Grad.Migrations
                     b.Navigation("Messages");
                 });
 
+            modelBuilder.Entity("Path2Grad.Models.Field", b =>
+                {
+                    b.Navigation("ProjectFields");
+                });
+
             modelBuilder.Entity("Path2Grad.Models.Internship", b =>
                 {
                     b.Navigation("InternshipCertificates");
@@ -902,24 +1129,21 @@ namespace Path2Grad.Migrations
 
             modelBuilder.Entity("Path2Grad.Models.Project", b =>
                 {
+                    b.Navigation("JoinRequests");
+
                     b.Navigation("ProjectFields");
 
                     b.Navigation("Requirements");
 
                     b.Navigation("Students");
 
-                    b.Navigation("Supervisors");
+                    b.Navigation("SupervisorProjects");
 
                     b.Navigation("Tasks");
 
                     b.Navigation("TeamMembers");
 
                     b.Navigation("projectFiles");
-                });
-
-            modelBuilder.Entity("Path2Grad.Models.ProjectsAdmin", b =>
-                {
-                    b.Navigation("ProjectsBank");
                 });
 
             modelBuilder.Entity("Path2Grad.Models.ProjectsBank", b =>
@@ -929,17 +1153,40 @@ namespace Path2Grad.Migrations
 
             modelBuilder.Entity("Path2Grad.Models.Student", b =>
                 {
+                    b.Navigation("Certificates");
+
                     b.Navigation("ChatBotConversations");
 
                     b.Navigation("Cv");
 
                     b.Navigation("Internships");
 
+                    b.Navigation("ProjectJoinRequests");
+
                     b.Navigation("Tasks");
 
-                    b.Navigation("Track");
-
                     b.Navigation("TrackTest");
+
+                    b.Navigation("WorkFiles");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.Supervisor", b =>
+                {
+                    b.Navigation("ProjectJoinRequests");
+
+                    b.Navigation("SupervisorProjects");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.Track", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("Path2Grad.Models.TrackItem", b =>
+                {
+                    b.Navigation("ItemLessons");
                 });
 #pragma warning restore 612, 618
         }

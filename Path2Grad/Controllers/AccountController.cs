@@ -66,7 +66,13 @@ namespace Path2Grad.Controllers
 
             return Unauthorized("Invalid email, password, or role");
         }
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete(".AspNetCore.Application.Id");
 
+            return Ok(new { message = "Logged out successfully" });
+        }
         private string GenerateJwtToken(string email, string role)
         {
             var claims = new[]
@@ -83,7 +89,7 @@ namespace Path2Grad.Controllers
                 issuer: _configuration["JWT:Issuer"],
                 audience: _configuration["JWT:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(2),
+                expires: DateTime.Now.AddDays(30),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
