@@ -85,6 +85,7 @@ namespace Path2Grad.Controllers
                     p.ProjectId,
                     p.ProjectName,
                     p.ProjectFields,
+                    p.Description,
                     p.NumberOfTeam,
                     Students = p.Students.Select(s => new StudentDto
                     {
@@ -143,5 +144,76 @@ namespace Path2Grad.Controllers
 
             return Ok(projectFiles);
         }
+        [HttpGet("ProjectRequest")]
+        public async Task<IActionResult> GetProjectRequest()
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var doctor = await _context.Supervisors.FirstOrDefaultAsync(s => s.SupervisorEmail == email);
+
+            var allRequests = await _context.SupervisorProjectJoinRequests
+                .Where(e => e.SupervisorId == doctor.SupervisorId)
+                .Include(e => e.Project)
+                .Include(e => e.Supervisor) 
+                .ToListAsync();
+
+            var result = new List<object>();
+
+            foreach (var request in allRequests)
+            {
+                var studentName = await _context.Students
+                    .Where(s => s.StudentId == request.StudentId)
+                    .Select(s => s.StudentName)
+                    .FirstOrDefaultAsync();
+
+                result.Add(new
+                {
+                    RequestId = request.RequestId,
+                    SenderPic = request.Supervisor?.Pic, 
+                    SenderName = studentName,
+                    ProjectName = request.Project?.ProjectName,
+                    projectId = request.ProjectId
+
+                });
+            }
+
+            return Ok(result);
+        }
+        [HttpPost("StatusRequest")]
+        public async Task<IActionResult> StatusRequest(SupervisorStatusRequestDto RequestDto)
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var doctor = await _context.Supervisors.FirstOrDefaultAsync(s => s.SupervisorEmail == email);
+
+            var project = await _context.SupervisorProjects.FirstOrDefaultAsync(s => s.ProjectId == RequestDto.ProjectId);
+            var request = await _context.SupervisorProjectJoinRequests.FirstOrDefaultAsync(e => e.RequestId == RequestDto.RequestId);
+
+            if (request == null)
+                return NotFound("Request not found.");
+
+            if (RequestDto.Status == "Remove")
+            {
+                _context.SupervisorProjectJoinRequests.Remove(request);
+            }
+            else if (RequestDto.Status == "Accept")
+            {
+                var supervisorproject = new SupervisorProject()
+                {
+                    ProjectId = project.ProjectId,
+                    SupervisorId = doctor.SupervisorId
+                };
+                await _context.AddAsync(supervisorproject);
+                _context.Remove(request);
+
+            }
+            else
+            {
+                return NotFound("Status not correct");
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok("The project was successfully accepted ");
+        }
+
+
     }
 }

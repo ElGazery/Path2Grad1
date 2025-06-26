@@ -94,7 +94,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Path2Grad API V1");
-    c.RoutePrefix = string.Empty; // Serve Swagger UI at app root (https://yourdomain/)
+    c.RoutePrefix = string.Empty; 
 });
 
 // Middleware pipeline

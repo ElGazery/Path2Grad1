@@ -32,6 +32,13 @@ namespace Path2Grad.Controllers
             return await _context.Students.FirstOrDefaultAsync(d => d.StudentEmail == email);
         }
 
+        [HttpGet("GetAllTracks")]
+        public async Task<IActionResult> GetAllTracks()
+        {
+            var tracks = _context.Tracks.Select(e=> new { e.TrackId,e.TrackName}).ToList();
+            return Ok(tracks);
+        }
+
         [HttpPost("AddTrack")]
         public async Task<IActionResult> PostTrack(AddTrackDto addTrackDto)
         {
@@ -68,6 +75,7 @@ namespace Path2Grad.Controllers
                                  ItemName = i.Name,
                                  Lessons = i.ItemLessons.Select(l => new
                                  {
+                                     LessonId=l.Id,
                                      LessonName = l.Name,
                                      IsComplet = l.IsComplet
                                  }).ToList()
@@ -96,6 +104,15 @@ namespace Path2Grad.Controllers
             double percentComplete = totalLessons > 0 ? (double)completedLessons / totalLessons * 100 : 0;
 
             return Ok(new { Message = "Track Rate", PercentComplete = percentComplete });
+        }
+        [HttpPut("UpdateTrack/{id}")]
+        public async Task<IActionResult> UpdateTrack(int id)
+        {
+           var student = await GetCurrentStudentAsync();
+            student.TrackId = id;
+            await _context.SaveChangesAsync();
+            return Ok("track updated successfully ");
+
         }
 
         [HttpPut("UpdateLessonStatus")]
